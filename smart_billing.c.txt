@@ -1,0 +1,133 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX 100
+
+char stack[MAX];
+int top = -1;
+
+// Stack functions
+void push(char x) {
+    stack[++top] = x;
+}
+
+char pop() {
+    return stack[top--];
+}
+
+int priority(char x) {
+    if (x == '(') return 0;
+    if (x == '+' || x == '-') return 1;
+    if (x == '*' || x == '/') return 2;
+    return 0;
+}
+
+// Infix to Postfix
+void infixToPostfix(char infix[], char postfix[]) {
+    int i = 0, j = 0;
+    char x, token;
+
+    push('(');
+    strcat(infix, ")");
+
+    while ((token = infix[i++]) != '\0') {
+        if (isdigit(token)) {
+            postfix[j++] = token;
+        } else if (token == '(') {
+            push(token);
+        } else if (token == ')') {
+            while ((x = pop()) != '(') {
+                postfix[j++] = x;
+            }
+        } else {
+            while (priority(stack[top]) >= priority(token)) {
+                postfix[j++] = pop();
+            }
+            push(token);
+        }
+    }
+    postfix[j] = '\0';
+}
+
+// Evaluate Postfix
+int evaluatePostfix(char postfix[]) {
+    int stack2[MAX];
+    int top2 = -1;
+
+    for (int i = 0; postfix[i]; i++) {
+        if (isdigit(postfix[i])) {
+            stack2[++top2] = postfix[i] - '0';
+        } else {
+            int val2 = stack2[top2--];
+            int val1 = stack2[top2--];
+
+            switch (postfix[i]) {
+                case '+': stack2[++top2] = val1 + val2; break;
+                case '-': stack2[++top2] = val1 - val2; break;
+                case '*': stack2[++top2] = val1 * val2; break;
+                case '/': stack2[++top2] = val1 / val2; break;
+            }
+        }
+    }
+    return stack2[top2];
+}
+
+// GST & Discount
+void billing() {
+    float price, gst, discount;
+
+    printf("Enter price: ");
+    scanf("%f", &price);
+
+    printf("Enter GST (%%): ");
+    scanf("%f", &gst);
+
+    printf("Enter Discount (%%): ");
+    scanf("%f", &discount);
+
+    float gstAmount = price * gst / 100;
+    float discountAmount = price * discount / 100;
+
+    float finalPrice = price + gstAmount - discountAmount;
+
+    printf("Final Price = %.2f\n", finalPrice);
+}
+
+// Main Menu
+int main() {
+    int choice;
+    char infix[100], postfix[100];
+
+    while (1) {
+        printf("\n--- Smart Billing Calculator ---\n");
+        printf("1. Evaluate Expression\n");
+        printf("2. GST & Discount Calculator\n");
+        printf("3. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter infix expression: ");
+                scanf("%s", infix);
+
+                infixToPostfix(infix, postfix);
+                printf("Postfix: %s\n", postfix);
+
+                printf("Result: %d\n", evaluatePostfix(postfix));
+                break;
+
+            case 2:
+                billing();
+                break;
+
+            case 3:
+                exit(0);
+
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+}
